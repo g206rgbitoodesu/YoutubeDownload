@@ -94,7 +94,7 @@ foreach ($Url in $Urls) {
         continue
     }
 
-    $Clients   = @("web_safari", "android", "ios", "tv_embedded", "")
+    $Clients = @("android", "ios", "web_safari", "tv_embedded", "")
     $Success   = $false
     $LastError = ""
     $HadErrors = $false
@@ -112,6 +112,7 @@ foreach ($Url in $Urls) {
             }
 
             $CommonArgs = @(
+                "--no-color", 
                 "-x",
                 "--audio-format", "mp3",
                 "--audio-quality", "0",
@@ -135,10 +136,18 @@ foreach ($Url in $Urls) {
 
             $AllArgs = $CommonArgs + $ExtractorArgs + @($Url)
 
-            $YtOutput = & yt-dlp @AllArgs 2>&1 | Tee-Object -Variable YtLines
-            $YtExit   = $LASTEXITCODE
+            # yt-dlp の出力を1行ずつストリーミング（job.log に即反映）
+$YtLines = New-Object System.Collections.Generic.List[string]
+& yt-dlp @AllArgs 2>&1 | ForEach-Object {
+    $line = "$_"
+    [Console]::Out.WriteLine($line)
+    $YtLines.Add($line)
+}
+$YtExit = $LASTEXITCODE
 
-            $ErrorCount = @($YtLines | Where-Object { "$_" -match '^\s*ERROR:' }).Count
+$ErrorCount = @($YtLines | Where-Object { "$_" -match '^\s*ERROR:' }).Count
+
+
 
             if ($YtExit -eq 0) {
                 if ($ErrorCount -gt 0) {

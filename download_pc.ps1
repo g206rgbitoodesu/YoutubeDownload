@@ -6,6 +6,7 @@
 #   - -StartIndex で途中再開に対応
 #   - -Force でアーカイブを無視した強制DL（再DL用）
 #   - Picard の終了コードを親プロセスで正しく判定
+#   - yt-dlp 出力をストリーミング化（job.log に即反映）
 # ========================================
 
 [CmdletBinding()]
@@ -44,7 +45,6 @@ if ($Force) {
     Write-Host "※ -Force 指定: アーカイブを無視して強制ダウンロードします" -ForegroundColor Magenta
 }
 $StartTime = Get-Date
-
 
 # ========================================
 # CSV読み込み（BOM/空行/コメント対応）
@@ -159,7 +159,7 @@ foreach ($Row in $Rows) {
     }
     $ParseMetaArgs = @("--parse-metadata", "%(artist,uploader,channel,creator)s:%(meta_artist)s")
 
-    $Clients   = @("web_safari", "android", "ios", "tv_embedded", "")
+    $Clients = @("android", "web_safari", "ios", "tv_embedded", "")
     $Success   = $false
     $LastError = ""
 
@@ -176,6 +176,7 @@ foreach ($Row in $Rows) {
             }
 
             $CommonArgs = @(
+                "--no-color",
                 "-x",
                 "--audio-format", "mp3",
                 "--audio-quality", "0",
@@ -197,14 +198,19 @@ foreach ($Row in $Rows) {
             }
 
             $AllArgs = $CommonArgs + $ExtractorArgs + @($Target)
-            & yt-dlp @AllArgs
 
-            if ($LASTEXITCODE -eq 0) {
+            # yt-dlp の出力を1行ずつストリーミング（job.log に即反映）
+            & yt-dlp @AllArgs 2>&1 | ForEach-Object {
+                [Console]::Out.WriteLine("$_")
+            }
+            $YtExit = $LASTEXITCODE
+
+            if ($YtExit -eq 0) {
                 Write-Host "  => 成功" -ForegroundColor Green
                 $Success = $true
                 break
             } else {
-                $LastError = "exit=$LASTEXITCODE (client=$Client, retry=$Retry)"
+                $LastError = "exit=$YtExit (client=$Client, retry=$Retry)"
                 Write-Host "  => 失敗。リトライします..." -ForegroundColor DarkYellow
                 Start-Sleep -Seconds 5
             }
