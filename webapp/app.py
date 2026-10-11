@@ -64,11 +64,36 @@ def get_local_ip() -> str:
     except Exception:
         return "127.0.0.1"
 
+
+# ----------------------------------------
+# プレイリストURL判定
+# ----------------------------------------
+def is_playlist_url(url: str) -> bool:
+    """プレイリストURLかどうか判定"""
+    if not url:
+        return False
+    u = url.lower()
+    if "youtube.com/playlist" in u:
+        return True
+    if "music.youtube.com/playlist" in u:
+        return True
+    # list= パラメータがあり、watch?v= が無い場合はプレイリスト
+    if "list=" in u and "watch?v=" not in u:
+        return True
+    return False
+
 # ----------------------------------------
 # パーサ: 楽曲リスト（CSV モード）
 # ----------------------------------------
-def parse_bulk_csv(text: str) -> list:
-    rows = []
+def parse_bulk_csv(text: str) -> tuple:
+    """
+    (songs, playlist_urls) のタプルを返す。
+    songs: (artist, title, url) のリスト
+    playlist_urls: 検出されたプレイリストURLのリスト（CSVモードでは拒否）
+    """
+    songs = []
+    playlist_urls = []
+
     for raw in text.splitlines():
         line = raw.strip()
         if not line or line.startswith("#"):
@@ -82,17 +107,23 @@ def parse_bulk_csv(text: str) -> list:
         if len(parts) == 1:
             v = parts[0]
             if v.startswith(("http://", "https://")):
-                rows.append(("", "", v))
+                if is_playlist_url(v):
+                    playlist_urls.append(v)
+                else:
+                    songs.append(("", "", v))
             else:
-                rows.append(("", v, ""))
+                songs.append(("", v, ""))
         elif len(parts) == 2:
-            rows.append((parts[0], parts[1], ""))
+            songs.append((parts[0], parts[1], ""))
         else:
-            rows.append((parts[0], parts[1], parts[2]))
+            artist, title, url = parts[0], parts[1], parts[2]
+            if url and is_playlist_url(url):
+                playlist_urls.append(url)
+            else:
+                songs.append((artist, title, url))
 
-    rows = [r for r in rows if r[1] or r[2]]
-    return rows
-
+    songs = [r for r in songs if r[1] or r[2]]
+    return songs, playlist_urls
 # ----------------------------------------
 # パーサ: プレイリスト（URL モード）
 # ----------------------------------------
@@ -227,13 +258,20 @@ def submit():
         return jsonify({"ok": False, "msg": "不正なモードです"}), 400
 
     if mode == "csv":
-        items = parse_bulk_csv(body)
+        items, bad_playlists = parse_bulk_csv(body)
+        if bad_playlists:
+            return jsonify({
+                "ok": False,
+                "msg": f"プレイリストURLが {len(bad_playlists)} 件含まれています。"
+                       f"『🎵 プレイリスト』タブから申請してください。"
+            }), 400
         if not items:
             return jsonify({"ok": False, "msg": "有効な楽曲がありません"}), 400
     else:
         items = parse_bulk_playlist(body)
         if not items:
             return jsonify({"ok": False, "msg": "有効なURLがありません"}), 400
+
 
     with state_lock:
         if current_job["status"] == "running":
