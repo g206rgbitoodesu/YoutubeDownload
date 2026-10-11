@@ -1,0 +1,136 @@
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", sans-serif;
+  background: #f5f5f7;
+  color: #1c1c1e;
+  min-height: 100vh;
+}
+
+main {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 20px 18px 60px;
+}
+
+header { text-align: center; margin-bottom: 24px; }
+
+h1 {
+  font-size: 1.35em;
+  margin: 8px 0 4px;
+  font-weight: 600;
+}
+
+.sub { color: #666; font-size: 0.85em; margin: 0; }
+
+form { margin-bottom: 20px; }
+
+label {
+  display: block;
+  margin-bottom: 18px;
+  font-size: 0.9em;
+  color: #444;
+  font-weight: 500;
+}
+
+input {
+  width: 100%;
+  padding: 14px 12px;
+  margin-top: 6px;
+  font-size: 16px;   /* iOSでズームしないよう16px以上 */
+  border: 1px solid #d1d1d6;
+  border-radius: 10px;
+  background: #fff;
+  transition: border-color .15s;
+}
+
+input:focus {
+  outline: none;
+  border-color: #007aff;
+  box-shadow: 0 0 0 3px rgba(0,122,255,0.15);
+}
+
+button {
+  width: 100%;
+  padding: 16px;
+  font-size: 1em;
+  font-weight: 600;
+  background: #007aff;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s, transform .05s;
+}
+
+button:active { background: #0056b3; transform: scale(0.99); }
+button:disabled { background: #999; cursor: wait; }
+
+.req { color: #e00; }
+
+#result {
+  margin-top: 8px;
+  padding: 14px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 0.92em;
+  min-height: 1em;
+  transition: all .2s;
+}
+
+#result.ok { background: #d4edda; color: #155724; }
+#result.ng { background: #f8d7da; color: #721c24; }
+
+#status-box {
+  margin-top: 24px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+#status-box.hidden { display: none; }
+
+#status-box h2 {
+  font-size: 0.95em;
+  margin: 0 0 10px;
+  color: #333;
+}
+
+#status-line {
+  font-size: 0.9em;
+  color: #007aff;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+#status-log {
+  margin: 0;
+  padding: 12px;
+  background: #1c1c1e;
+  color: #f1f1f1;
+  border-radius: 8px;
+  font-size: 0.72em;
+  line-height: 1.5;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+footer {
+  margin-top: 40px;
+  text-align: center;
+  font-size: 0.78em;
+  color: #888;
+}
+
+footer code {
+  background: #eee;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.95em;
+}
+
+footer a { color: #007aff; text-decoration: none; }

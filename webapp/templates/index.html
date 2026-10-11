@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🎵 ダウンロード申請</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<main>
+  <header>
+    <h1>🎵 音楽ダウンロード申請</h1>
+    <p class="sub">スマホから楽曲を追加できます</p>
+  </header>
+
+  <form id="form">
+    <label>
+      アーティスト
+      <input type="text" name="artist" placeholder="Queen" autocomplete="off" autocapitalize="off">
+    </label>
+
+    <label>
+      曲名 <span class="req">*</span>
+      <input type="text" name="title" placeholder="Bohemian Rhapsody" required autocomplete="off" autocapitalize="off">
+    </label>
+
+    <label>
+      YouTube URL（任意）
+      <input type="url" name="url" placeholder="https://youtu.be/..." autocomplete="off" autocapitalize="off" inputmode="url">
+    </label>
+
+    <button type="submit" id="btn">申請する</button>
+  </form>
+
+  <div id="result"></div>
+
+  <section id="status-box" class="hidden">
+    <h2>処理状況</h2>
+    <div id="status-line">待機中...</div>
+    <pre id="status-log"></pre>
+  </section>
+
+  <footer>
+    <p>PC: <a href="http://127.0.0.1:5000" target="_blank">http://127.0.0.1:5000</a></p>
+    <p>スマホ: <code>http://{{ local_ip }}:5000</code></p>
+  </footer>
+</main>
+
+<script>
+const form    = document.getElementById("form");
+const btn     = document.getElementById("btn");
+const result  = document.getElementById("result");
+const statusBox = document.getElementById("status-box");
+const statusLine = document.getElementById("status-line");
+const statusLog  = document.getElementById("status-log");
+
+let pollTimer = null;
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  btn.disabled = true;
+  btn.textContent = "送信中...";
+  result.textContent = "";
+  result.className = "";
+
+  try {
+    const fd = new FormData(form);
+    const res = await fetch("/submit", { method: "POST", body: fd });
+    const data = await res.json();
+
+    if (data.ok) {
+      result.textContent = "✅ " + data.msg;
+      result.className = "ok";
+      form.reset();
+      startPolling();
+    } else {
+      result.textContent = "❌ " + data.msg;
+      result.className = "ng";
+    }
+  } catch (err) {
+    result.textContent = "❌ 通信エラー: " + err;
+    result.className = "ng";
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "申請する";
+  }
+});
+
+function startPolling() {
+  statusBox.classList.remove("hidden");
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(pollStatus, 2000);
+  pollStatus();
+}
+
+async function pollStatus() {
+  try {
+    const res = await fetch("/status");
+    const s = await res.json();
+
+    const emoji = { idle: "⏸", running: "⏳", done: "✅", failed: "❌" }[s.status] || "❔";
+    statusLine.textContent = `${emoji} ${s.status}${s.started_at ? " (開始: " + s.started_at + ")" : ""}`;
+
+    if (s.log_tail && s.log_tail.length) {
+      statusLog.textContent = s.log_tail.join("\n");
+      statusLog.scrollTop = statusLog.scrollHeight;
+    }
+
+    if (s.status === "done" || s.status === "failed") {
+      clearInterval(pollTimer);
+      pollTimer = null;
+      if (s.status === "done") {
+        statusLine.textContent += "  🎉 Navidromeで Quick scan してください";
+      }
+    }
+  } catch (err) {
+    // 無視（次回ポーリングで回復）
+  }
+}
+</script>
+</body>
+</html>

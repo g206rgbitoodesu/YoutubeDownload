@@ -43,3 +43,12 @@ Desktop.ini
 .idea/
 *.swp
 *~
+
+
+# ========================================
+# Web UI generated files
+# ========================================
+webapp/__pycache__/
+webapp/*.pyc
+webapp/queue.json
+webapp/webapp.log
