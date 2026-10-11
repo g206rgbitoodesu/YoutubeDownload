@@ -7,6 +7,10 @@
 #   - タグが不完全ならファイル名 "Artist - Title" から推定
 #   - 同名ファイルが存在する場合は " (1)" を付けて退避
 # ========================================
+# v2:
+#   - music_download が存在しない場合を「Picard が全て移動済み」と
+#     みなして正常終了扱いに変更（エラー扱いをやめた）
+# ========================================
 [CmdletBinding()]
 param(
     [string]$SourceDir  = "music_download",
@@ -62,15 +66,14 @@ Write-Host ""
 Write-Host "=== music_download → Navidrome 移動 ===" -ForegroundColor Magenta
 Write-Host ""
 
-
 if (-not (Test-Path $SourceDir)) {
-    if ($DryRun) {
-        Write-Host "  [DryRun] $SourceDir は存在しません（本実行時はスキップされます）" -ForegroundColor Gray
-        exit 0
-    }
-    Write-Host "エラー: $SourceDir が見つかりません。" -ForegroundColor Red
-    exit 1
+    # Picard が全て移動済みの場合は music_download 自体が無くなる。
+    # これは正常な状態なので、エラーではなくスキップとして扱う。
+    Write-Host "  $SourceDir は存在しません（Picard が全て移動済みの可能性）" -ForegroundColor DarkGray
+    Write-Host "  → 移動処理をスキップします" -ForegroundColor DarkGray
+    exit 0
 }
+
 if (-not (Test-Path $DestDir)) {
     if ($DryRun) {
         Write-Host "  [DryRun] $DestDir は存在しません（本実行時はスキップされます）" -ForegroundColor Gray
