@@ -11,24 +11,40 @@
 <main>
   <header>
     <h1>🎵 音楽ダウンロード申請</h1>
-    <p class="sub">スマホから楽曲を追加できます</p>
+    <p class="sub">まとめて貼り付けて一括ダウンロード</p>
   </header>
 
+  <!-- モード切り替えタブ -->
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-mode="csv" role="tab">📝 楽曲リスト</button>
+    <button class="tab" data-mode="playlist" role="tab">🎵 プレイリスト</button>
+  </div>
+
   <form id="form">
-    <label>
-      アーティスト
-      <input type="text" name="artist" placeholder="Queen" autocomplete="off" autocapitalize="off">
-    </label>
+    <input type="hidden" name="mode" id="modeInput" value="csv">
 
-    <label>
-      曲名 <span class="req">*</span>
-      <input type="text" name="title" placeholder="Bohemian Rhapsody" required autocomplete="off" autocapitalize="off">
-    </label>
+    <!-- CSV モード説明 -->
+    <div class="hint" id="hint-csv">
+      <strong>書式（1行1曲）:</strong><br>
+      <code>アーティスト,曲名</code><br>
+      <code>アーティスト,曲名,URL</code><br>
+      <code>URL のみ</code> ／ <code>曲名のみ</code> も可<br>
+      <span class="muted"># で始まる行はコメント。曲名にカンマを含む場合は "..." で囲む。</span>
+    </div>
 
-    <label>
-      YouTube URL（任意）
-      <input type="url" name="url" placeholder="https://youtu.be/..." autocomplete="off" autocapitalize="off" inputmode="url">
-    </label>
+    <!-- プレイリストモード説明 -->
+    <div class="hint hidden" id="hint-playlist">
+      <strong>書式（1行1URL）:</strong><br>
+      <code>https://www.youtube.com/playlist?list=...</code><br>
+      <span class="muted"># で始まる行はコメント。</span>
+    </div>
+
+    <label for="body">入力内容</label>
+    <textarea id="body" name="body" rows="12"
+      placeholder="Queen,Bohemian Rhapsody&#10;サカナクション,新宝島&#10;https://youtu.be/fJ9rUzIMcZQ"
+      autocomplete="off" autocapitalize="off" spellcheck="false"></textarea>
+
+    <div class="counter"><span id="lineCount">0</span> 行</div>
 
     <button type="submit" id="btn">申請する</button>
   </form>
@@ -48,17 +64,62 @@
 </main>
 
 <script>
-const form    = document.getElementById("form");
-const btn     = document.getElementById("btn");
-const result  = document.getElementById("result");
+const form      = document.getElementById("form");
+const btn       = document.getElementById("btn");
+const bodyEl    = document.getElementById("body");
+const modeInput = document.getElementById("modeInput");
+const tabs      = document.querySelectorAll(".tab");
+const hintCsv   = document.getElementById("hint-csv");
+const hintPl    = document.getElementById("hint-playlist");
+const result    = document.getElementById("result");
 const statusBox = document.getElementById("status-box");
 const statusLine = document.getElementById("status-line");
 const statusLog  = document.getElementById("status-log");
+const lineCount  = document.getElementById("lineCount");
 
 let pollTimer = null;
 
+// --- タブ切り替え ---
+tabs.forEach(tab => {
+  tab.addEventListener("click", () => {
+    tabs.forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    const mode = tab.dataset.mode;
+    modeInput.value = mode;
+
+    if (mode === "csv") {
+      hintCsv.classList.remove("hidden");
+      hintPl.classList.add("hidden");
+      bodyEl.placeholder = "Queen,Bohemian Rhapsody\nサカナクション,新宝島\nhttps://youtu.be/fJ9rUzIMcZQ";
+    } else {
+      hintCsv.classList.add("hidden");
+      hintPl.classList.remove("hidden");
+      bodyEl.placeholder = "https://www.youtube.com/playlist?list=PLxxxxxxxx";
+    }
+    updateLineCount();
+  });
+});
+
+// --- 行数カウント ---
+function updateLineCount() {
+  const lines = bodyEl.value
+    .split("\n")
+    .map(l => l.trim())
+    .filter(l => l && !l.startsWith("#"));
+  lineCount.textContent = lines.length;
+}
+bodyEl.addEventListener("input", updateLineCount);
+
+// --- 送信 ---
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  if (!bodyEl.value.trim()) {
+    result.textContent = "❌ 入力が空です";
+    result.className = "ng";
+    return;
+  }
+
   btn.disabled = true;
   btn.textContent = "送信中...";
   result.textContent = "";
@@ -72,7 +133,8 @@ form.addEventListener("submit", async (e) => {
     if (data.ok) {
       result.textContent = "✅ " + data.msg;
       result.className = "ok";
-      form.reset();
+      bodyEl.value = "";
+      updateLineCount();
       startPolling();
     } else {
       result.textContent = "❌ " + data.msg;
@@ -87,6 +149,7 @@ form.addEventListener("submit", async (e) => {
   }
 });
 
+// --- 進捗ポーリング ---
 function startPolling() {
   statusBox.classList.remove("hidden");
   if (pollTimer) clearInterval(pollTimer);
@@ -100,7 +163,11 @@ async function pollStatus() {
     const s = await res.json();
 
     const emoji = { idle: "⏸", running: "⏳", done: "✅", failed: "❌" }[s.status] || "❔";
-    statusLine.textContent = `${emoji} ${s.status}${s.started_at ? " (開始: " + s.started_at + ")" : ""}`;
+    const modeLabel = { csv: "楽曲リスト", playlist: "プレイリスト" }[s.mode] || "";
+    statusLine.textContent =
+      `${emoji} ${s.status}  ${modeLabel ? "[" + modeLabel + "]" : ""}` +
+      `${s.count ? "  " + s.count + " 件" : ""}` +
+      `${s.started_at ? "  開始: " + s.started_at : ""}`;
 
     if (s.log_tail && s.log_tail.length) {
       statusLog.textContent = s.log_tail.join("\n");
@@ -115,9 +182,11 @@ async function pollStatus() {
       }
     }
   } catch (err) {
-    // 無視（次回ポーリングで回復）
+    // 次回ポーリングで回復
   }
 }
+
+updateLineCount();
 </script>
 </body>
 </html>
