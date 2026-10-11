@@ -1,0 +1,45 @@
+# ========================================
+# Personal / environment-specific
+# ========================================
+_sanitize_backup/
+backup/
+duplicates_backup/
+
+# ========================================
+# Downloaded content (staging & archive)
+# ========================================
+music_download/
+downloaded.txt
+downloaded_playlist.txt
+
+# ========================================
+# Logs
+# ========================================
+success.log
+failed.log
+success_playlist.log
+failed_playlist.log
+verify_ok.txt
+verify_ng.txt
+
+# ========================================
+# Generated CSV (produced by scripts)
+# ========================================
+songlist_todo.csv
+songlist_ng.csv
+songlist_clean.csv
+
+# ========================================
+# OS metadata
+# ========================================
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ========================================
+# Editor / IDE
+# ========================================
+.vscode/
+.idea/
+*.swp
+*~

@@ -1,0 +1,21 @@
+# ========================================
+# playlist.txt
+# 1行1URL。行頭 # はコメント。
+# ========================================
+#
+# 使い方:
+#   1. このファイルに YouTube プレイリストの URL を貼り付け
+#   2. .\run_all.ps1 -Source playlist を実行
+#
+# 例:
+#   https://www.youtube.com/playlist?list=PLxxxxxxxxxxxxxxxx
+#   https://music.youtube.com/playlist?list=OLAK5uy_xxxxxxxx
+#
+# ----------------------------------------
+# サンプル（クラシック音楽のプレイリスト）
+# ----------------------------------------
+# https://www.youtube.com/playlist?list=PLxxxxxxxxxxxxxxxx
+
+# ========================================
+# 自分のプレイリストを以下に追加してください
+# ========================================
