@@ -1,4 +1,4 @@
-#YoutubeDownload — Technical Demo
+# YoutubeDownload — Technical Demo
 
  This project is a "Technical Demo."
 This is a proof-of-concept and learning repository designed to build an automated pipeline by integrating multiple open-source tools (yt-dlp / ffmpeg / MusicBrainz Picard / Navidrome) using PowerShell and Python.
