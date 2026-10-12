@@ -1,4 +1,4 @@
-# 🎵 YoutubeDownload
+#  YoutubeDownload
 
 A collection of PowerShell scripts that download music from YouTube, apply high-accuracy tagging with MusicBrainz Picard, and automatically place the files into a Navidrome music library.
 
@@ -8,7 +8,7 @@ A collection of PowerShell scripts that download music from YouTube, apply high-
 
 ---
 
-## 📋 Table of Contents
+##  Table of Contents
 
 1. [Overview](#1-overview)
 2. [Requirements](#2-requirements)
@@ -22,6 +22,9 @@ A collection of PowerShell scripts that download music from YouTube, apply high-
 10. [Troubleshooting](#10-troubleshooting)
 11. [Known Limitations](#11-known-limitations)
 12. [License](#12-license)
+
+v2 New Features: Batch input (simultaneous support for multiple songs and playlist URLs) and real-time progress display are now supported.
+A Web UI to request songs and playlists in bulk from a smartphone browser, which automatically executes downloading → tagging → Navidrome deployment on a PC.
 
 ---
 
@@ -680,6 +683,52 @@ In the Navidrome admin UI, run **Quick scan**.
 Backup folders are automatically excluded.
 
 ---
+
+
+---
+
+## 10.5. Web Form (Local Server)
+
+Since v2, you can submit songs from your phone via a local web form — no more typing commands on the PC.
+
+### Quick Start
+
+```powershell
+cd C:\Users\<username>\Documents\YoutubeDownload\webapp
+python -m pip install -r requirements.txt
+.\start.bat
+```
+
+Then open `http://<PC-IP>:5000` on your phone (same Wi-Fi network).
+
+### Features
+
+- **Bulk input**: Paste multiple songs or playlist URLs at once
+- **Two modes**: Song list (CSV) / Playlist URL
+- **Real-time progress**: See download/tagging progress live on your phone
+- **Fully automatic**: From submission to Navidrome placement, all handled by `run_all.ps1`
+
+### Architecture
+
+```
+[Phone] ──Wi-Fi──→ Flask (port 5000)
+                       │
+                       ├─ Append to songlist.csv / playlist.txt
+                       └─ Launch run_all.ps1 in background
+                             │
+                             ├─ make_todo.ps1 (skip already-downloaded)
+                             ├─ yt-dlp download
+                             ├─ Picard tagging
+                             └─ Move to Navidrome
+```
+
+### Security
+
+- **LAN-only**: Never expose port 5000 to the internet
+- **Firewall**: Allow "Private network" only on first launch
+- See `webapp/README.md` for details
+
+
 
 ## 11. Known Limitations
 
