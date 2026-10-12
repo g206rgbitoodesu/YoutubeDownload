@@ -5,9 +5,13 @@ This is a proof-of-concept and learning repository designed to build an automate
 Please be sure to read the Disclaimer at the bottom for details.
 Demo Highlights:
 •  Tool Integration: Unifies yt-dlp, ffmpeg, Picard, and Navidrome via PowerShell.
+
 •  Automated Pipeline: Executes a 9-step workflow with a single command.
+
 •  Web UI: Features a Flask-powered request form accessible from mobile devices.
+
 •  Error Handling: Implements client rotation, retries, and data integrity checks.
+
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg)](https://docs.microsoft.com/powershell/)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)]()
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
