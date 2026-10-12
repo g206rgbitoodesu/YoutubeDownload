@@ -14,12 +14,51 @@
 [CmdletBinding()]
 param(
     [string]$SourceDir  = "music_download",
-    [string]$DestDir = "$env:USERPROFILE\Downloads\navidrome\music",
+    [string]$DestDir    = "",     # 空なら自動検出
     [switch]$DryRun,
     [switch]$Force
 )
 
 $ErrorActionPreference = "Continue"
+
+# ========================================
+# Navidrome music フォルダの自動検出
+# ========================================
+# $DestDir が指定されていなければ、以下の順に探索:
+#   1. $env:USERPROFILE\Downloads\navidrome*\music
+#   2. $env:USERPROFILE\Downloads\*\music
+#   3. C:\navidrome\music
+#   4. $env:USERPROFILE\navidrome\music
+# ========================================
+if ([string]::IsNullOrWhiteSpace($DestDir)) {
+    $candidates = @(
+        "$env:USERPROFILE\Downloads\navidrome*\music",
+        "$env:USERPROFILE\navidrome*\music",
+        "$env:USERPROFILE\Downloads\*\music",
+        "C:\navidrome\music",
+        "/var/lib/navidrome/music",
+        "$env:HOME/navidrome/music"
+    )
+
+    foreach ($pattern in $candidates) {
+        $found = @(Get-Item -Path $pattern -ErrorAction SilentlyContinue |
+                   Where-Object { $_.PSIsContainer } |
+                   Select-Object -First 1)
+        if ($found.Count -gt 0) {
+            $DestDir = $found[0].FullName
+            Write-Host ("  Navidrome フォルダ検出: {0}" -f $DestDir) -ForegroundColor Cyan
+            break
+        }
+    }
+}
+
+if ([string]::IsNullOrWhiteSpace($DestDir)) {
+    Write-Host "エラー: Navidrome の music フォルダが見つかりません。" -ForegroundColor Red
+    Write-Host "  -DestDir で明示的に指定してください。" -ForegroundColor Yellow
+    Write-Host "  例: .\move_leftovers.ps1 -DestDir 'C:\path\to\navidrome\music'" -ForegroundColor Gray
+    exit 1
+}
+
 Set-Location -Path $PSScriptRoot
 
 function Write-OK   { param([string]$m) Write-Host "  [OK]   $m" -ForegroundColor Green }
