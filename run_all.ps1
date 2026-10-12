@@ -22,6 +22,16 @@ param(
 $ErrorActionPreference = "Continue"
 Set-Location -Path $PSScriptRoot
 
+# ========================================
+# レジストリから最新の PATH を再構築
+# ========================================
+# Web UI や外部プロセスから起動された場合、
+# 親プロセスの古い環境変数を引き継ぐことがある。
+# 常にレジストリの最新 PATH を反映させる。
+$machinePath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$userPath    = [Environment]::GetEnvironmentVariable("Path", "User")
+$env:Path    = (@($machinePath, $userPath) | Where-Object { $_ }) -join ';'
+
 $TotalSteps = 9
 $StepNames = @{
     1 = "CSV整形 (clean_songlist)"

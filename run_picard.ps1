@@ -13,7 +13,7 @@
 param(
     [string]$PicardPath  = "C:\Program Files\MusicBrainz Picard\picard.exe",
     [string]$MusicDir    = "music_download",
-    [int]   $TimeoutSec  = 600      # 10分で強制終了
+    [int]   $TimeoutSec  = 3600      # 10分で強制終了
 )
 
 $ErrorActionPreference = "Continue"

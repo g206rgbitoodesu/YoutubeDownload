@@ -14,7 +14,7 @@
 [CmdletBinding()]
 param(
     [string]$SourceDir  = "music_download",
-    [string]$DestDir    = "$env:USERPROFILE\Downloads\navidrome\music",
+    [string]$DestDir = "$env:USERPROFILE\Downloads\navidrome\music",
     [switch]$DryRun,
     [switch]$Force
 )

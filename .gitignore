@@ -51,3 +51,21 @@ Desktop.ini
 webapp/__pycache__/
 webapp/*.pyc
 webapp/job.log
+
+# ========================================
+# Generated at runtime
+# ========================================
+picard_commands.txt
+
+
+# ========================================
+# Archive (if you implement archive_done later)
+# ========================================
+songlist_archive.csv
+songlist_done.csv
+
+# ========================================
+# Web UI additional
+# ========================================
+webapp/queue.json
+webapp/*.log

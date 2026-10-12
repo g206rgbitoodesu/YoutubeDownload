@@ -60,9 +60,11 @@ $rules = @(
        Replace = 'C:\Users\<ユーザー名>' }
     @{ Ext = @('.txt','.md')
        Find = 'C:/Users/yoshi'
-       Replace = 'C:/Users/<ユーザー名>' }
-
-    # --- 大小文字統一（全対象ファイル、最後に適用） ---
+       Replace = 'C:/Users/<ユーザー名>' } 
+    @{ Ext = @('.ps1')
+       Find = 'navidrome_0\.64\.2_windows_amd64'
+       Replace = 'navidrome' }
+        # --- 大小文字統一（全対象ファイル、最後に適用） ---
     @{ Ext = @('.ps1','.txt','.md','.csv')
        Find = 'youtubeDownload'
        Replace = 'YoutubeDownload' }

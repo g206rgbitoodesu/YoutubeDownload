@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
     [string]$TargetDir   = "music_download",
-    [int]   $MinDuration = 30,
+    [int]   $MinDuration = 15,
     [int]   $MinBitrate  = 64,
     [int]   $MinSizeKB   = 100,
     [string]$OkFile      = "verify_ok.txt",

@@ -19,4 +19,5 @@
 # ========================================
 # 自分のプレイリストを以下に追加してください
 # ========================================
-
+https://youtube.com/playlist?list=PLgNFpUIWnmtv-0ADCJ7b2Dfx8qyJAoEFe&si=EA32xzulbNcoCftO
+https://youtube.com/playlist?list=PLFHmEH043xvznvC0dlK3HlM9pz4rRMBVD&si=cC30BuwfKZzofQ_F
