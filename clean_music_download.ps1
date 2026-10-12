@@ -6,6 +6,12 @@
 #   - "Artist - Title - Info" → "Artist - Title"
 #   - 装飾を除去: (Official Video), -Music Video-, [LIVE ...], 【...】, etc.
 # ========================================
+# v2 修正:
+#   - ⧸ は削除せず " - " に置換（Kansas City ⧸ Hey-Hey 連結バグ修正）
+#   - 先頭の連番 "NN " を分離してパターン適用（playlist_index 対応）
+#   - 「」は曲名本体のため削除しない
+#   - 括弧なし "Official Music Video" を行末まで削除
+# ========================================
 [CmdletBinding()]
 param(
     [string]$TargetDir = "music_download",
@@ -14,7 +20,6 @@ param(
 
 $ErrorActionPreference = "Continue"
 Set-Location -Path $PSScriptRoot
-
 
 if (-not (Test-Path $TargetDir)) {
     if ($DryRun) {
@@ -25,18 +30,20 @@ if (-not (Test-Path $TargetDir)) {
     exit 1
 }
 
-
 Write-Host ""
 Write-Host "=== music_download ファイル名クリーンアップ ===" -ForegroundColor Magenta
 if ($DryRun) { Write-Host "  ★ DryRun モード" -ForegroundColor Magenta }
 Write-Host ""
 
+# ========================================
 # 装飾除去パターン（順に適用）
-# 装飾除去パターン（順に適用）
-# ★ 重要: 「」は曲名本体のことが多いので削除しない
+# ========================================
+# ★ 重要:
+#   - 「」は曲名本体のことが多いので削除しない
+#   - ⧸ は区切り文字なので $decorations では扱わない（本体で " - " に置換）
+# ========================================
 $decorations = @(
     # 区切り記号系
-    '\s*⧸\s*',
     '\s*-\s*Music Video\s*-?',
     '\s*-Music Video-',
 
@@ -51,7 +58,7 @@ $decorations = @(
     '\s*\[Official[^\]]*\]',
     '\s*\(Official[^)]*\)',
     '\s*\[LIVE[^\]]*\]',
-    '\s*【[^】]*】',              # ★ 【】は装飾として削除（LIVE等）
+    '\s*【[^】]*】',
     '\s*＂[^＂]*＂',
     '\s*\(Top Of The Pops[^)]*\)',
     '\s*\(Live at [^)]*\)',
@@ -80,43 +87,58 @@ foreach ($f in $files) {
     $orig = $base
 
     # ----------------------------------------
+    # 0a. 先頭の連番 "NN " を退避
+    # ----------------------------------------
+    # 例: "02 Queen - Queen - Title" → prefix="02 ", body="Queen - Queen - Title"
+    $prefix = ""
+    $body   = $base
+    if ($base -match '^(\d+\s+)(.+)$') {
+        $prefix = $matches[1]
+        $body   = $matches[2]
+    }
+
+    # ----------------------------------------
+    # 0b. ⧸ を区切り文字 " - " に置換（削除ではなく置換）
+    # ----------------------------------------
+    # 例: "Kansas City ⧸ Hey-Hey-Hey-Hey" → "Kansas City - Hey-Hey-Hey-Hey"
+    $body = $body -replace '\s*⧸\s*', ' - '
+
+    # ----------------------------------------
     # 二重アーティスト除去
     # ----------------------------------------
     # (1) "Artist - Artist - Title" → "Artist - Title"
-    if ($base -match '^(.+?)\s+-\s+\1\s+-\s+(.+)$') {
-        $base = "$($matches[1]) - $($matches[2])"
+    if ($body -match '^(.+?)\s+-\s+\1\s+-\s+(.+)$') {
+        $body = "$($matches[1]) - $($matches[2])"
     }
 
-    # (2) "Artist - Artist ⧸ Title" → "Artist - Title"
-    if ($base -match '^(.+?)\s+-\s+\1\s+⧸\s*(.+)$') {
-        $base = "$($matches[1]) - $($matches[2])"
+    # (2) "Artist - Artist「Title」" → "Artist - Title"
+    #     Mrs.GREEN APPLE 系のYouTubeタイトル対策
+    if ($body -match '^(.+?)\s+-\s+\1「(.+)」') {
+        $body = "$($matches[1]) - $($matches[2])"
     }
 
-    # (3) "Artist - Artist「Title」" → "Artist - Title"
-    #     Mrs.GREEN APPLE 系のYouTubeタイトル「アーティスト名「曲名」」対策
-    if ($base -match '^(.+?)\s+-\s+\1「(.+)」') {
-        $base = "$($matches[1]) - $($matches[2])"
-    }
-
-    # (4) "Artist - Artist Title" 形式（区切りなし・アーティスト名が先頭に重複）
-    #     例: "Mrs. GREEN APPLE - Mrs. GREEN APPLE ライラック"
-    #     アーティスト名がタイトル先頭に付いている場合のみ除去
-    if ($base -match '^(.+?)\s+-\s+\1\s+(.+)$') {
-        $base = "$($matches[1]) - $($matches[2])"
+    # (3) "Artist - Artist Title" 形式（区切りなし・アーティスト名が先頭に重複）
+    if ($body -match '^(.+?)\s+-\s+\1\s+(.+)$') {
+        $body = "$($matches[1]) - $($matches[2])"
     }
 
     # ----------------------------------------
     # 装飾除去（順序重要: 長い/具体的 → 短い/一般）
     # ----------------------------------------
     foreach ($pat in $decorations) {
-        $base = $base -replace $pat, ''
+        $body = $body -replace $pat, ''
     }
 
     # ----------------------------------------
     # 連続する記号・空白整理
     # ----------------------------------------
-    $base = $base -replace '\s{2,}', ' '
-    $base = $base.Trim(' ', '-', '_', '.', '　')
+    $body = $body -replace '\s{2,}', ' '
+    $body = $body.Trim(' ', '-', '_', '.', '　')
+
+    # ----------------------------------------
+    # prefix を戻して最終名を組み立て
+    # ----------------------------------------
+    $base = "$prefix$body"
 
     # ----------------------------------------
     # 変化なし判定
@@ -125,6 +147,7 @@ foreach ($f in $files) {
         $skipped++
         continue
     }
+
     $newName = "$base$ext"
     Write-Host ("  変更: {0}" -f $orig) -ForegroundColor Gray
     Write-Host ("     → {0}" -f $base) -ForegroundColor Green
