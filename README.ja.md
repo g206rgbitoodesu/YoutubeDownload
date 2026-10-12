@@ -1,6 +1,17 @@
-# YoutubeDownload
+#  YoutubeDownload — 技術デモ
 
-YouTube から音楽をダウンロードし、MusicBrainz Picard で高精度なタグ付けを行い、Navidrome サーバーの音楽フォルダへ自動配置する PowerShell スクリプト群。
+> ** 本プロジェクトは「技術デモ」です。**  
+> 複数のオープンソースツール（yt-dlp / ffmpeg / MusicBrainz Picard / Navidrome）を PowerShell + Python で連携させ、自動化パイプラインを構築する **技術実証・学習用リポジトリ** です。  
+> 詳細は末尾の [免責事項](#️-免責事項) を必ずお読みください。
+
+**デモの内容**:
+
+-  **ツール連携**: yt-dlp × ffmpeg × Picard × Navidrome を PowerShell で統合
+-  **自動化パイプライン**: 9ステップの処理を1コマンドで実行
+-  **Web UI**: スマホから操作できる Flask 製申請フォーム
+-  **エラーハンドリング**: クライアントローテーション・リトライ・整合性検査
+
+
 
 [![PowerShell](https://img.shields.io/badge/PowerShell-5.1%2B-blue.svg)](https://docs.microsoft.com/powershell/)
 [![Platform](https://img.shields.io/badge/platform-Windows%2010%2F11-lightgrey.svg)]()
