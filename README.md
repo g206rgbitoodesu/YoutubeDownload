@@ -753,4 +753,78 @@ Use at your own risk.
 
 ---
 
-**Last updated**: 2026-10-12
+---
+
+## ⚠️ Disclaimer
+
+### This project is a **technical demonstration**
+
+This repository is a **technical demonstration** of a PowerShell + Python automation pipeline that combines multiple open-source tools (yt-dlp, ffmpeg, MusicBrainz Picard, Navidrome). It is **NOT** intended to promote, encourage, or facilitate copyright infringement.
+
+### Intended use
+
+The primary intended use is:
+
+- **Downloading your own YouTube videos** (content you have uploaded)
+- **Downloading content you have explicit permission to download**
+- **Downloading content that is explicitly licensed for free download** (e.g. Creative Commons, public domain)
+- **Educational study of the automation techniques** demonstrated here
+
+### Prohibited use
+
+**Do NOT** use this tool to:
+
+- Download copyrighted music or videos without the rights holder's permission
+- Circumvent DRM, paywalls, or access restrictions
+- Redistribute copyrighted content
+- Violate YouTube's Terms of Service or any applicable laws
+
+### Default configuration: self-videos only
+
+To enforce responsible use, the default configuration **only allows downloading videos from your own channel** (see `config.ps1` → `$OwnChannelUrls`). To download from other sources, you must **explicitly opt in** by editing this configuration and confirming that you have the legal right to do so.
+
+### No warranty
+
+This software is provided "as is", without warranty of any kind. The authors are **not responsible** for:
+
+- Any legal consequences arising from misuse
+- Any damage to your system, data, or network
+- Any content downloaded using this tool
+- Any violation of third-party terms of service
+
+### Copyright notice
+
+All content downloaded using this tool remains the property of its respective copyright holders. Users are **solely responsible** for ensuring their use complies with:
+
+- Copyright laws in their jurisdiction
+- YouTube's Terms of Service
+- MusicBrainz / AcoustID usage policies
+- Any other applicable regulations
+
+### Legal basis
+
+Downloading content from YouTube may be restricted in your country. In some jurisdictions, downloading for **personal use** may be permitted, while in others it is **strictly prohibited**. It is the user's responsibility to know and follow the laws of their own country.
+
+### Reporting
+
+If you believe this repository contains anything that promotes illegal activity, please open an issue and it will be addressed promptly.
+
+### Recommended alternative
+
+For **legal music library building**, consider:
+
+- **Bandcamp** — direct artist support, DRM-free
+- **Jamendo** — Creative Commons licensed music
+- **Free Music Archive** — curated public domain / CC music
+- **Internet Archive** — public domain recordings
+- **Purchasing** digital music or physical media
+
+---
+
+## 📜 License
+
+MIT License. See [LICENSE](LICENSE) for details.
+
+**Last updated**: 2026-10-13
+
+
